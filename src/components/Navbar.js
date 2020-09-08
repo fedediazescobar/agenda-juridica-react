@@ -1,49 +1,39 @@
 import React, { useContext } from "react";
 import UserContext from "../context/UserContext";
+import { Link } from "react-router-dom";
 
-const Navbar = () => {
+const Navbar = ({ cerrarSesion }) => {
   const { userData } = useContext(UserContext);
 
   return (
     <div>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <nav
+        className="navbar navbar-expand-lg navbar-dark bg-dark"
+        style={{ height: "5rem" }}
+      >
         <div className="container">
-          <span className="navbar-brand">FDE Abogados</span>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-          <div className="collapse navbar-collapse" id="navbarNavDropdown">
-            <span className="nav-link m-auto text-light">
-              <h3>Agenda Jurídica</h3>
-            </span>
-            <div className="nav-item dropdown text-light">
-              <span
-                className="nav-link dropdown-toggle text-light"
-                id="navbarDropdownMenuLink"
-                role="button"
-                data-toggle="dropdown"
-                aria-haspopup="true"
-                aria-expanded="false"
-              >
-                {userData.name ? userData.name : "Hello guest"}
-              </span>
-              <div
-                className="dropdown-menu bg-dark"
-                aria-labelledby="navbarDropdownMenuLink"
-              >
-                <div className="mt-2">
-                  <span className="dropdown-item text-light">
-                    Cerrar Sesión
-                  </span>
-                </div>
+          <Link exact path to="/">
+            <span className="navbar-brand">FDE Abogados</span>
+          </Link>
+          <div className="dropdown ml-auto">
+            <button
+              className="btn btn-secondary dropdown-toggle"
+              type="button"
+              id="dropdownMenuButton"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              {userData.name ? userData.name : "Hola Invitado"}
+            </button>
+            <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              {userData.admin ? (
+                <Link to="/addUser">
+                  <div className="dropdown-item">Agregar Usuario</div>
+                </Link>
+              ) : null}
+              <div className="dropdown-item" onClick={cerrarSesion}>
+                Cerrar Sesión
               </div>
             </div>
           </div>

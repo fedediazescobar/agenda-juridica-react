@@ -7,9 +7,13 @@ const MainTable = () => {
   const { tasks, setTasks } = useContext(TaskContext);
   const { date } = useContext(DateContext);
   const dateDone = new Date().toLocaleDateString();
+  const completedStyle = {
+    color: "rgba(0,0,0,0.3)",
+    textDecoration: "line-through",
+  };
 
   return (
-    <div>
+    <div className="table-responsive">
       <table className="table table-striped mt-3">
         <thead className="thead-dark">
           <tr>
@@ -24,7 +28,7 @@ const MainTable = () => {
         <tbody>
           {tasks.map((task) => {
             return (
-              <tr key={task._id}>
+              <tr key={task._id} style={task.completed ? completedStyle : null}>
                 <th scope="row">
                   <div className="input-group-prepend">
                     <div className="input-group-text">
@@ -40,6 +44,7 @@ const MainTable = () => {
                               date_completed: !task.completed ? dateDone : "",
                             }
                           );
+
                           const response = await Axios(
                             `http://localhost:5000/api/tasks-by-date/${date}`
                           );

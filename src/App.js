@@ -10,20 +10,20 @@ import Today from "./helpers/date";
 import UserContext from "./context/UserContext";
 import TaskContext from "./context/TaskContext";
 import DateContext from "./context/DateContext";
+import AuthContext from "./context/AuthContext";
 import Axios from "axios";
 
 function App() {
+  const token = localStorage.getItem("token");
+  const today = Today();
   const [userData, setUserData] = useState({});
   const [tasks, setTasks] = useState([]);
-  const today = Today();
   const [date, setDate] = useState(today);
-  const token = localStorage.getItem("token");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
       if (token === null) return localStorage.setItem("token", "");
-
-      //await Axios.post("http://localhost:5000/api/verify-token", { token });
 
       const response = await Axios.get("http://localhost:5000/api/user-data", {
         headers: {
@@ -33,9 +33,11 @@ function App() {
       const { data } = response;
 
       setUserData(data);
+      if (userData !== {}) return setIsAuthenticated(true);
+      if (!isAuthenticated) return window.location.assign("/");
     };
     getUser();
-  });
+  }, [userData, token, isAuthenticated]);
 
   useEffect(() => {
     const getTasks = async () => {
@@ -43,12 +45,17 @@ function App() {
         `http://localhost:5000/api/tasks-by-date/${date}`
       );
       const { data } = response;
-      console.log(data);
       setTasks(data);
     };
 
     getTasks();
   }, [date]);
+
+  const cerrarSesion = () => {
+    localStorage.setItem("token", "");
+    setIsAuthenticated(false);
+    window.location.reload();
+  };
 
   return (
     <div>
@@ -56,26 +63,36 @@ function App() {
         <UserContext.Provider value={{ userData, setUserData }}>
           <TaskContext.Provider value={{ tasks, setTasks }}>
             <DateContext.Provider value={{ date, setDate }}>
-              <Navbar />
-              <Switch>
-                <Route path="/home" render={() => <Home />} />
-                <Route exact path="/">
-                  {!token ? (
-                    <Redirect to="/login" />
+              <AuthContext.Provider
+                value={{ isAuthenticated, setIsAuthenticated }}
+              >
+                <Navbar cerrarSesion={cerrarSesion} />
+                <Switch>
+                  <Route exact path="/home">
+                    {<Redirect exact path to="/" />}
+                  </Route>
+
+                  {isAuthenticated ? (
+                    <>
+                      <Route exact path="/add" component={AddTask} />
+                      <Route exact path="/getTask" component={GetTask} />
+                      <Route exact path="/addUser" component={AddUser} />
+                      <Route path="/home" render={() => <Home />} />
+                      <Route exact path="/" component={Home} />
+                      <Route exact path="/login">
+                        <Redirect exact path="/" />
+                      </Route>
+                    </>
                   ) : (
-                    <Route render={() => <Home />} />
+                    <>
+                      <Route path="/*">
+                        <Redirect exact path to="/login" />
+                      </Route>
+                      <Route exact path="/login" component={Login} />
+                    </>
                   )}
-                </Route>
-                <Route path="/login">
-                  {token ? <Redirect exact path to="/" /> : <Login />}
-                </Route>
-                <Route exact path="/home">
-                  {<Redirect exact path to="/" />}
-                </Route>
-                <Route path="/add" component={AddTask} />
-                <Route path="/getTask" component={GetTask} />
-                <Route path="/addUser" component={AddUser} />
-              </Switch>
+                </Switch>
+              </AuthContext.Provider>
             </DateContext.Provider>
           </TaskContext.Provider>
         </UserContext.Provider>
